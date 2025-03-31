@@ -5,7 +5,7 @@ import time
 
 app = Flask(__name__)
 
-# Telegram setup
+# Telegram setup 
 TELEGRAM_TOKEN = "7772895600:AAH7OY0PODCGQVPnOCw3JB00WjZ3JAp9oMs"
 TELEGRAM_API_URL = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
 
