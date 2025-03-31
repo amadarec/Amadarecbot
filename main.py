@@ -59,64 +59,36 @@ threading.Thread(target=check_alerts_loop, daemon=True).start()
 
 @app.route(f"/webhook/{TELEGRAM_TOKEN}", methods=["POST"])
 def webhook():
-    data = request.get_json()
-    if "message" in data:
-        chat_id = data["message"]["chat"]["id"]
-        text = data["message"].get("text", "").strip()
+    try:
+        data = request.get_json()
+        print("📥 Incoming Telegram data:", data)
 
-        if text.startswith("/start"):
-            send_message(chat_id, "👋 Welcome! Use `/alert BTC 80000`, `/alert ETH <1900`, etc.")
-        elif text.startswith("/alert"):
-            try:
-                parts = text.split()
-                if len(parts) not in [3, 4]:
-                    raise ValueError
-                coin = parts[1].upper()
-                if coin not in SUPPORTED_COINS:
-                    send_message(chat_id, f"❌ Unsupported coin: {coin}")
-                    return
-                if len(parts) == 4:
-                    alert_type = parts[2]
-                    price = float(parts[3])
-                else:
-                    alert_type = "="
-                    price = float(parts[2])
-                if alert_type not in [">", "<", "="]:
-                    send_message(chat_id, "❌ Use `<`, `>`, or `=` for alert type.")
-                    return
-                user_alerts.setdefault(chat_id, {}).setdefault(coin, []).append({
-                    "type": alert_type,
-                    "price": price
-                })
-                send_message(chat_id, f"✅ Alert set: *{coin} {alert_type} {price}*")
-            except:
-                send_message(chat_id, "⚠️ Usage: `/alert BTC 80000` or `/alert ETH <1900`")
-        elif text.startswith("/cancel"):
-            parts = text.split()
-            if len(parts) != 2:
-                send_message(chat_id, "⚠️ Usage: `/cancel BTC`")
-                return
-            coin = parts[1].upper()
-            if chat_id in user_alerts and coin in user_alerts[chat_id]:
-                del user_alerts[chat_id][coin]
-                send_message(chat_id, f"🗑 Alerts for {coin} canceled.")
+        if "message" in data:
+            chat_id = data["message"]["chat"]["id"]
+            text = data["message"].get("text", "").strip()
+            print(f"📨 Message from {chat_id}: {text}")
+
+            if text.startswith("/start"):
+                send_message(chat_id, "👋 Welcome to @Amadarecbot!\nUse `/alert BTC 80000` to get started.")
+            elif text.startswith("/alert"):
+                # [keep the rest of your alert logic here...]
+                send_message(chat_id, "⚙️ Alert command received!")
+            elif text.startswith("/list"):
+                send_message(chat_id, "📋 List command received.")
+            elif text.startswith("/cancel"):
+                send_message(chat_id, "🗑 Cancel command received.")
             else:
-                send_message(chat_id, "❌ No active alerts for that coin.")
-        elif text.startswith("/list"):
-            if chat_id not in user_alerts or not user_alerts[chat_id]:
-                send_message(chat_id, "📭 You have no active alerts.")
-                return
-            msg = "📋 *Your Alerts:*\n"
-            for coin, conditions in user_alerts[chat_id].items():
-                for c in conditions:
-                    msg += f"• {coin} {c['type']} {c['price']}\n"
-            send_message(chat_id, msg)
-        else:
-            send_message(chat_id, "❓ Unknown command. Try `/alert`, `/cancel`, or `/list`.")
+                send_message(chat_id, "❓ Unknown command.")
+        return {"ok": True}
 
-    return {"ok": True}
+    except Exception as e:
+        print("❌ ERROR in webhook():", e)
+        traceback.print_exc()
+        return {"ok": False}, 500
+
 
 import os
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+import traceback
