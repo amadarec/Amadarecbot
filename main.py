@@ -5,10 +5,9 @@ from flask import Flask, request
 
 app = Flask(__name__)
 
-TELEGRAM_TOKEN = "7772895600:AAH7OY0PODCGQVPnOCw3JB00WjZ3JAp9oMs"
-TELEGRAM_API_URL = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
+TOKEN = '7772895600:AAH7OY0PODCGQVPnOCw3JB00WjZ3JAp9oMs'
+URL = f"https://api.telegram.org/bot{TOKEN}/"
 
-# Load or initialize alerts
 ALERT_FILE = 'alerts.json'
 if os.path.exists(ALERT_FILE):
     with open(ALERT_FILE, 'r') as f:
@@ -25,9 +24,13 @@ def send_message(chat_id, text, buttons=None):
     if buttons:
         payload["reply_markup"] = json.dumps({"keyboard": buttons, "resize_keyboard": True})
     requests.post(URL + "sendMessage", json=payload)
+
+# ✅ GET endpoint for Render testing
 @app.route("/", methods=["GET"])
 def home():
     return "✅ Bot is alive!"
+
+# ✅ Telegram Webhook endpoint
 @app.route("/", methods=["POST"])
 def webhook():
     data = request.get_json()
@@ -44,9 +47,8 @@ def webhook():
             help_msg = (
                 "📖 *Bot Commands:*\n\n"
                 "➕ `/alert BTC > 85000` — set alert\n"
-                "❌ `/cancel BTC` — cancel all alerts for BTC\n"
-                "📋 `/list` — view your active alerts\n"
-                "💡 Example: `/alert ETH < 1800`\n"
+                "❌ `/cancel BTC` — cancel alerts\n"
+                "📋 `/list` — view your alerts"
             )
             send_message(chat_id, help_msg)
 
@@ -94,5 +96,6 @@ def webhook():
 
     return "ok"
 
+# ✅ Required to run on Render
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
