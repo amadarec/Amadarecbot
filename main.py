@@ -66,10 +66,11 @@ def webhook():
         if "message" in data:
             chat_id = data["message"]["chat"]["id"]
             text = data["message"].get("text", "").strip()
+
             print(f"📨 Message from {chat_id}: {text}")
 
-        if text.startswith("/start") or text.startswith("/help"):
-            send_message(chat_id, """👋 Welcome to @Amadarecbot!
+            if text.startswith("/start") or text.startswith("/help"):
+                send_message(chat_id, """👋 Welcome to @Amadarecbot!
 
 📌 *Available Commands:*
 /set COIN PRICE → Set alert (ex: `/set BTC 80000`)
@@ -77,24 +78,67 @@ def webhook():
 /cancel COIN → Cancel alerts for a coin
 /myalerts → View your active alerts
 /help → Show this menu again
-""")            
+""")
 
-                
             elif text.startswith("/set"):
-                # [keep the rest of your alert logic here...]
-                send_message(chat_id, "⚙️ Alert command received!")
-            elif text.startswith("/myalerts"):
-                send_message(chat_id, "📋 List command received.")
+                try:
+                    parts = text.split()
+                    if len(parts) not in [3, 4]:
+                        raise ValueError
+                    coin = parts[1].upper()
+                    if coin not in SUPPORTED_COINS:
+                        send_message(chat_id, f"❌ Unsupported coin: {coin}")
+                        return
+                    alert_type = "="
+                    price = None
+                    if len(parts) == 3:
+                        price = float(parts[2])
+                    elif len(parts) == 4:
+                        alert_type = parts[2]
+                        price = float(parts[3])
+                        if alert_type not in ["<", ">", "="]:
+                            raise ValueError
+                    user_alerts.setdefault(chat_id, {}).setdefault(coin, []).append({
+                        "type": alert_type,
+                        "price": price
+                    })
+                    send_message(chat_id, f"✅ Alert set: *{coin} {alert_type} {price}*")
+                except:
+                    send_message(chat_id, "⚠️ Use: `/set BTC 80000` or `/set ETH <1900`")
+
             elif text.startswith("/cancel"):
-                send_message(chat_id, "🗑 Cancel command received.")
+                parts = text.split()
+                if len(parts) != 2:
+                    send_message(chat_id, "⚠️ Use: `/cancel BTC`")
+                    return
+                coin = parts[1].upper()
+                if chat_id in user_alerts and coin in user_alerts[chat_id]:
+                    del user_alerts[chat_id][coin]
+                    send_message(chat_id, f"🗑 Alerts for {coin} canceled.")
+                else:
+                    send_message(chat_id, "❌ No alerts found for that coin.")
+
+            elif text.startswith("/myalerts"):
+                if chat_id not in user_alerts or not user_alerts[chat_id]:
+                    send_message(chat_id, "📭 No active alerts.")
+                    return
+                msg = "📋 *Your Alerts:*\n"
+                for coin, conds in user_alerts[chat_id].items():
+                    for c in conds:
+                        msg += f"• {coin} {c['type']} {c['price']}\n"
+                send_message(chat_id, msg)
+
             else:
-                send_message(chat_id, "❓ Unknown command.")
+                send_message(chat_id, "❓ Unknown command. Type /help to see options.")
+
         return {"ok": True}
 
     except Exception as e:
         print("❌ ERROR in webhook():", e)
+        import traceback
         traceback.print_exc()
         return {"ok": False}, 500
+
 
 
 import os
