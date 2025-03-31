@@ -25,7 +25,9 @@ def send_message(chat_id, text, buttons=None):
     if buttons:
         payload["reply_markup"] = json.dumps({"keyboard": buttons, "resize_keyboard": True})
     requests.post(URL + "sendMessage", json=payload)
-
+@app.route("/", methods=["GET"])
+def home():
+    return "✅ Bot is alive!"
 @app.route("/", methods=["POST"])
 def webhook():
     data = request.get_json()
