@@ -68,8 +68,8 @@ def webhook():
             text = data["message"].get("text", "").strip()
             print(f"📨 Message from {chat_id}: {text}")
 
-            if text.startswith("/start") or text.startswith("/help"):
-    send_message(chat_id, """👋 Welcome to @Amadarecbot!
+                    if text.startswith("/start") or text.startswith("/help"):
+            send_message(chat_id, """👋 Welcome to @Amadarecbot!
 
 📌 *Available Commands:*
 /set COIN PRICE → Set alert (ex: `/set BTC 80000`)
