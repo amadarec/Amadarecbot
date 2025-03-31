@@ -68,7 +68,7 @@ def webhook():
             text = data["message"].get("text", "").strip()
             print(f"📨 Message from {chat_id}: {text}")
 
-                    if text.startswith("/start") or text.startswith("/help"):
+        if text.startswith("/start") or text.startswith("/help"):
             send_message(chat_id, """👋 Welcome to @Amadarecbot!
 
 📌 *Available Commands:*
@@ -77,7 +77,7 @@ def webhook():
 /cancel COIN → Cancel alerts for a coin
 /myalerts → View your active alerts
 /help → Show this menu again
-""")
+""")            
 
                 
             elif text.startswith("/set"):
