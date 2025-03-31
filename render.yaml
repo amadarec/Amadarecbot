@@ -4,6 +4,3 @@ services:
     env: python
     buildCommand: pip install -r requirements.txt
     startCommand: python main.py
-    envVars:
-      - key: TELEGRAM_TOKEN
-        value: 7772895600:AAH7OY0PODCGQVPnOCw3JB00WjZ3JAp9oMs
