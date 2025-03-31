@@ -68,12 +68,22 @@ def webhook():
             text = data["message"].get("text", "").strip()
             print(f"📨 Message from {chat_id}: {text}")
 
-            if text.startswith("/start"):
-                send_message(chat_id, "👋 Welcome to @Amadarecbot!\nUse `/alert BTC 80000` to get started.")
-            elif text.startswith("/alert"):
+            if text.startswith("/start") or text.startswith("/help"):
+    send_message(chat_id, """👋 Welcome to @Amadarecbot!
+
+📌 *Available Commands:*
+/set COIN PRICE → Set alert (ex: `/set BTC 80000`)
+/set COIN > PRICE → Set condition alert (ex: `/set ETH <1800`)
+/cancel COIN → Cancel alerts for a coin
+/myalerts → View your active alerts
+/help → Show this menu again
+""")
+
+                
+            elif text.startswith("/set"):
                 # [keep the rest of your alert logic here...]
                 send_message(chat_id, "⚙️ Alert command received!")
-            elif text.startswith("/list"):
+            elif text.startswith("/myalerts"):
                 send_message(chat_id, "📋 List command received.")
             elif text.startswith("/cancel"):
                 send_message(chat_id, "🗑 Cancel command received.")
